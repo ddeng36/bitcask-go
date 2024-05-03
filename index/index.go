@@ -24,6 +24,7 @@ type Item struct {
 	pos *data.LogRecordPos
 }
 
+// 放入btree的item必须要实现这个Less方法，因为btree需要对item进行排序
 func (ai *Item) Less(bi btree.Item) bool {
 	return bytes.Compare(ai.key, bi.(*Item).key) == -1
 }
