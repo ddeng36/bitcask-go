@@ -54,6 +54,33 @@ func Open(options Options) (*DB, error) {
 	return db, nil
 }
 
+// Delete 根据 key 删除对应的数据
+func (db *DB) Delete(key []byte) error {
+	if len(key) == 0 {
+		return ErrKeyIsEmpty
+	}
+	if pos := db.index.Get(key); pos == nil {
+		return nil
+	}
+
+	// 构造并写入日志
+	logRecord := &data.LogRecord{
+		Key: key,
+		Type: data.LogRecordDeleted,
+	}
+	_, err := db.appendLogRecord(logRecord)
+	if err != nil {
+		return nil
+	}
+
+	// 删除
+	ok := db.index.Delete(key)
+	if !ok {
+		return ErrIndexUpdateFailed
+	}
+	return nil
+}
+
 // Put 写入KV数据
 func (db *DB) Put(key []byte, value []byte) error {
 	if len(key) == 0 {
@@ -252,12 +279,15 @@ func (db *DB) loadIndexFromDataFiles() error {
 				Fid:    fileId,
 				Offset: offset,
 			}
+			var ok bool
 			if logRecord.Type == data.LogRecordDeleted {
-				db.index.Delete(logRecord.Key)
+				ok = db.index.Delete(logRecord.Key)
 			} else {
-				db.index.Put(logRecord.Key, logRecordPos)
+				ok = db.index.Put(logRecord.Key, logRecordPos)
 			}
-
+			if !ok {
+				return ErrIndexUpdateFailed
+			}
 			// 递增offset，下一次从新的位置开始
 			offset += size
 		}

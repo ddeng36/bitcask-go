@@ -39,6 +39,7 @@ type IOManager interface {
 ## 数据读写流程
 ### 写数据
 - 先把数据写入磁盘，再更新内存索引,具体逻辑在db.Put()
+- 删除也是写入一条log
 ```go
 // Logecord 写入到数据文件的记录。日志：数据文件中的数据是追加写入的，类似日志格式
 type LogRecord struct {
