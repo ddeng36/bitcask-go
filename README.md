@@ -51,3 +51,7 @@ type LogRecord struct {
 - 根据key去内存中查找。具体逻辑在db.Get()
 
 - todo 图
+
+## 数据库启动流程
+1. 从磁盘中加载数据文件到内存中loadDataFiles()
+2. 遍历文件中所有记录，并更新到内存索引中loadIndexFromDataFiles()

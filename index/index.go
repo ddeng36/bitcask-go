@@ -19,6 +19,25 @@ type Indexer interface {
 	Delete(key []byte) bool
 }
 
+type IndexType = int8
+
+const (
+	Btree IndexType = iota + 1 // Btree索引
+
+	ART // Adaptive Radix Tree索引
+)
+
+func NewIndexer(typ IndexType) Indexer {
+	switch typ {
+	case Btree:
+		return NewBTree()
+	case ART:
+		return nil
+	default:
+		panic("unsupported index type")
+	}
+}
+
 type Item struct {
 	key []byte
 	pos *data.LogRecordPos
