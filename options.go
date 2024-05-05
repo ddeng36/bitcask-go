@@ -1,5 +1,7 @@
 package bitcask_go
 
+import "os"
+
 type Options struct {
 	DirPath string // 数据库数据目录
 
@@ -12,7 +14,15 @@ type Options struct {
 type IndexType = int8
 
 const (
-	Btree IndexType = iota + 1 // Btree索引
+	BTree IndexType = iota + 1 // Btree索引
 
 	ART // Adaptive Radix Tree索引
 )
+
+
+var DefaultOptions = Options{
+	DirPath:      os.TempDir(),
+	DataFileSize: 256 * 1024 * 1024, // 256MB
+	SyncWrites:   false,
+	IndexType:    BTree,
+}

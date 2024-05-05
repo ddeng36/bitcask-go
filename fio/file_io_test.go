@@ -15,6 +15,7 @@ func destroyFile(name string) {
 	}
 }
 
+// 在linux上测试没问题，在windows上测试会报错
 func TestNewFileIOManager(t * testing.T) {
 	path := filepath.Join("/tmp", "a.data")
 	fio, err := NewFileIOManager(path)
@@ -55,6 +56,7 @@ func TestFileIO_Read(t *testing.T) {
 	_, err = fio.Write([]byte("key-b"))
 	assert.Nil(t, err)
 	b1 := make([]byte, 5)
+	// 从第0个位置开始读取，读取5个字节，1个字节是一个字符
 	n, err := fio.Read(b1, 0)
 	assert.Equal(t, 5, n)
 	assert.Equal(t, []byte("key-a"), b1)

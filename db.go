@@ -12,9 +12,11 @@ import (
 	"sync"
 )
 
-// DB bitcask 存储引擎实例
+// DB: bitcask 存储引擎实例
 type DB struct {
 	options    Options
+	// sync.Mutex 是最基本的互斥锁，用于保护临界区，它在同一时刻只允许一个 goroutine 进入临界区。
+	// sync.RWMutex 是读写锁，它在 sync.Mutex 的基础上提供了更细粒度的控制。它允许多个 goroutine 同时持有读锁，但只允许一个 goroutine 持有写锁。
 	mu         *sync.RWMutex
 	filesIds   []int                     // 文件id，只能在加载索引的时候用
 	activeFile *data.DataFile            // 当前活跃数据文件，可以用于写入

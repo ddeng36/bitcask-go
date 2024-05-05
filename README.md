@@ -100,5 +100,5 @@
 
 
 ### 数据库启动流程
-1. 从磁盘中加载数据文件到内存中loadDataFiles()
-2. 遍历文件中所有记录，并更新到内存索引中loadIndexFromDataFiles()
+1. loadDataFiles()从磁盘中加载数据文件到内存中，把DataFile放在DB的actvieFile和olderFiles中
+2. loadIndexFromDataFiles()遍历DB的actvieFile和olderFiles，通过offset读出LogRecord，并通过db.index.Put(logRecord.Key, logRecordPos)更新到内存索引中。
