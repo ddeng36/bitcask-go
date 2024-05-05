@@ -87,7 +87,7 @@ func (db *DB) Put(key []byte, value []byte) error {
 		return ErrKeyIsEmpty
 	}
 
-	// 追加写如到当前活跃数据文件中
+	// 追加写到当前活跃数据文件中
 	logRecord := &data.LogRecord{
 		Key:   key,
 		Value: value,
