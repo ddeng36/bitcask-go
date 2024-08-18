@@ -8,6 +8,9 @@ const (
 	BTree IndexType = iota + 1 // Btree索引
 
 	ART // Adaptive Radix Tree索引
+
+	// BPlusTree B+ 树索引，将索引存储到磁盘上
+	BPlusTree
 )
 
 

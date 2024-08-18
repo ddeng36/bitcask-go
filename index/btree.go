@@ -22,6 +22,10 @@ func NewBTree() *BTree {
 	}
 }
 
+func (bt *BTree) Close() error {
+	return nil
+}
+
 func (bt *BTree) Put(key []byte, pos *data.LogRecordPos) bool {
 	it := &Item{
 		key: key,

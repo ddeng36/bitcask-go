@@ -17,12 +17,20 @@ const (
 	DataFileNameSuffix    = ".data"
 	HintFileName          = "hint-index"
 	MergeFinishedFileName = "merge-finished"
+	SeqNoFileName         = "seq-no"
 )
 // DataFile 数据文件
 type DataFile struct {
 	FileId    uint32        // 文件id
 	WriteOff  int64         // 文件写到了哪个位置
 	IoManager fio.IOManager // io 读写管理器
+}
+
+
+// OpenSeqNoFile 存储事务序列号的文件
+func OpenSeqNoFile(dirPath string) (*DataFile, error) {
+	fileName := filepath.Join(dirPath, SeqNoFileName)
+	return newDataFile(fileName, 0)
 }
 
 // OpenDataFile 打开新的数据文件
