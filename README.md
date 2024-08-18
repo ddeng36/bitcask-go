@@ -1,6 +1,6 @@
 # bitcask-go
 利用go语言实现bitcask KV存储。<a src=".\resources\bitcask-intro.pdf">论文详情</a>
-## Bitcask
+## Bitcask架构
 ### DB Server
 - 一个Bitcask实例是一个目录。同一时间内OS只能有一个进程（可以理解成DB server）对Bitcask进行写操作。
 - bitcask由磁盘和内存两部分组成，activeFile和olderFiles属于磁盘部分，index属于内存索引
@@ -164,3 +164,18 @@ bitcask方法接口
 2. loadIndexFromDataFiles()遍历DB的actvieFile和olderFiles，通过offset读出LogRecord，并通过db.index.Put(logRecord.Key, logRecordPos)更新到内存索引中。
 <img src=".\resources\load.png">bitcast读数据的过程</img>
 
+
+## 特性
+### 事务
+#### Seq编码Log
+- 在DB中维护一个全局递增的seq用于encode Log，从而支持事务
+<img src=".\resources\transaction_log.png">bitcast读数据的过程</img>
+
+#### 事务的Put,Delete,Commit
+- 执行逻辑
+  1. Put和Delete方法不会更新内存或磁盘，而是更新map，，map中存储的是最后一次更新的结果
+  2. Commit会提交变动，先得到全局加锁递增的seq num，然后把seqnum与key进行编码。之后，先更新磁盘，再写入Fin日志，最后更新内存。
+<img src=".\resources\write_batch_commit.png">事务的Put,Delete,Commit过程</img>
+#### 事务的Load
+  1. Load时，先从硬盘load进Datafile中，然后判断是否为事务操作，如果否则直接载入内存索引，如果是则暂存进map中。遍历map，判断事务是否有Fin标识，如果无则不载入内存，从用户角度看，保证了事务的原子性。
+  <img src=".\resources\write_batch_load.png">事务的Put,Delete,Commit过程</img>

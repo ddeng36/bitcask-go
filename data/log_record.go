@@ -9,6 +9,7 @@ type LogRecordType = byte
 const (
 	LogRecordNormal LogRecordType = iota
 	LogRecordDeleted
+	LogRecordTxnFinished
 )
 
 // crc type keySize valueSize
@@ -104,4 +105,10 @@ func getLogRecordCRC(lr *LogRecord, header []byte) uint32 {
 	crc = crc32.Update(crc, crc32.IEEETable, lr.Value)
 
 	return crc
+}
+
+// TransactionRecord 暂存的事务相关的数据
+type TransactionRecord struct {
+	Record *LogRecord
+	Pos    *LogRecordPos
 }
