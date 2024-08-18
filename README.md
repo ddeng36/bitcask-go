@@ -178,4 +178,12 @@ bitcask方法接口
 <img src=".\resources\write_batch_commit.png">事务的Put,Delete,Commit过程</img>
 #### 事务的Load
   1. Load时，先从硬盘load进Datafile中，然后判断是否为事务操作，如果否则直接载入内存索引，如果是则暂存进map中。遍历map，判断事务是否有Fin标识，如果无则不载入内存，从用户角度看，保证了事务的原子性。
-  <img src=".\resources\write_batch_load.png">事务的Put,Delete,Commit过程</img>
+  <img src=".\resources\write_batch_load.png">事务的Load过程</img>
+
+ ### Merge
+- 逻辑
+  - merge用来清理磁盘上的无用数据：transaction seq num，deleted log。新进程调用Merge时，会遍历datafile目录，并把合法的log写入Mergeddatafile和hintfile
+<img src=".\resources\merge.png">merge过程</img>
+
+  - 当load时，会先检查是否有Merge文件，如果有，则把MergedFileData载入Datafile中，把hintfile载入index中。
+<img src=".\resources\merge.png">merge的load过程</img>
