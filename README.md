@@ -217,3 +217,29 @@ Copy()可以将数据拷贝到指定位置，用于支持数据备份
 ### 支持HTTP和RPC
 实现了HTTP接口和RPC接口，外部可以通过网络或者远程调用bitcask
 
+## Benchmark
+```shell
+	cd ./benchmark
+	go test -bench=.
+```
+### 单机测试
+goos: linux
+goarch: amd64
+pkg: bitcask-go/benchmark
+cpu: 12th Gen Intel(R) Core(TM) i5-12450H
+ValueSize: 1kb
+Action			   call times in 1 second    time consuming		memory consuming
+Benchmark_Put-12          145454              8223 ns/op            4666 B/op        
+Benchmark_Get-12         3590193               344.9 ns/op           135 B/op        
+Benchmark_Delete-12      3291531               336.9 ns/op           135 B/op        
+PASS
+ok      bitcask-go/benchmark    4.810s
+
+### 对比
+Benchmark results on a Macbook 11" Dual core Intel Core i7 with 16GB RAM (~2015 model).
+Engine	Concurrency	Reads/s	Write/s
+pogreb	1	1028574	22838
+goleveldb	1	78180	78607
+bbolt	1	340504	13836
+badger	1	118662	28599
+bitcask	1	441101	14686
