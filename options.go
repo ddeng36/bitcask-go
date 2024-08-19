@@ -15,20 +15,32 @@ const (
 
 
 type Options struct {
-	DirPath string // 数据库数据目录
+	// 数据库数据目录
+	DirPath string
 
-	DataFileSize int64 // 数据库文件大小
+	// 数据文件的大小
+	DataFileSize int64
 
-	SyncWrites bool // 每次写数据是否持久化
+	// 每次写数据是否持久化
+	SyncWrites bool
 
-	IndexType IndexType // 索引类型
+	// 累计写到多少字节后进行持久化
+	BytesPerSync uint
+
+	// 索引类型
+	IndexType IndexType
+
+	// 启动时是否使用 MMap 加载数据
+	MMapAtStartup bool
 }
 
 var DefaultOptions = Options{
-	DirPath:      os.TempDir(),
-	DataFileSize: 256 * 1024 * 1024, // 256MB
-	SyncWrites:   false,
-	IndexType:    BTree,
+	DirPath:       os.TempDir(),
+	DataFileSize:  256 * 1024 * 1024, // 256MB
+	SyncWrites:    false,
+	BytesPerSync:  0,
+	IndexType:     BTree,
+	MMapAtStartup: true,
 }
 
 

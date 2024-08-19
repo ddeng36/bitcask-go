@@ -180,10 +180,33 @@ bitcask方法接口
   1. Load时，先从硬盘load进Datafile中，然后判断是否为事务操作，如果否则直接载入内存索引，如果是则暂存进map中。遍历map，判断事务是否有Fin标识，如果无则不载入内存，从用户角度看，保证了事务的原子性。
   <img src=".\resources\write_batch_load.png">事务的Load过程</img>
 
- ### Merge
+ ### 冗余数据清理 - Merge
 - 逻辑
   - merge用来清理磁盘上的无用数据：transaction seq num，deleted log。新进程调用Merge时，会遍历datafile目录，并把合法的log写入Mergeddatafile和hintfile
 <img src=".\resources\merge.png">merge过程</img>
 
   - 当load时，会先检查是否有Merge文件，如果有，则把MergedFileData载入Datafile中，把hintfile载入index中。
 <img src=".\resources\merge.png">merge的load过程</img>
+
+### 内存索引优化
+#### 支持多种数据结构索引
+	- B树：key+索引维护在内存中，val维护在磁盘中。查找数据需要经历1次I/O。由于key+索引维护在内存中，所以数据量受限与内存空间。
+	- ART：key+索引维护在内存中，val维护在磁盘中。查找数据需要经历1次I/O。key+索引维护在内存中，val维护在磁盘中。查找数据需要经历1次I/O。
+	- B+数：key+索引，val都维护在磁盘中。查找数据需要经过2次I/O，不受限与内存空间，但读写性能下降。
+<img src=".\resources\data_indexer.png">indexer implements</img>
+
+#### 索引的锁的优化
+	- 之前内存中维护了一个索引结构，所有的读写操作都会竞争这个索引的锁，在高并发的场景下可能是一个性能瓶颈。我们可以维护所个索引，通过hash函数取模映射到不同的索引中。这样竞争锁的概率下降了。
+	- 如果存在多个索引结构，则迭代器不可用了，为了解决这个问题，引入了最小堆。
+<img src=".\resources\multi_indexer.png">multi_indexer</img>
+<img src=".\resources\min_heap.png">min_heap</img>
+
+### 文件I/O优化
+#### 文件锁
+- bitcask为单机存储，只允许在但个进程中运行，加入flock为文件上所，实现锁进程互斥。
+#### 个性化持久化
+- SyncWrite选项用于控制是否每次写入都持久化到磁盘，false为系统自动调度，true为每次写入。
+- 加入BytesPerSync，累积到一定字节数，进行持久化。
+#### 启动速度优化
+- 之前，启动时需要将磁盘中的数据加载到内存中。在这中默认的文件I/O下，需要由操作系统将数据从内核态拷贝到用户态
+- 优化后采用内存文件映射（MMAP）IO来加速启动速度，避免了从内核态拷贝到用户态
